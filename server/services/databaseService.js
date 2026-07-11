@@ -1,8 +1,6 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// Create a connection pool instead of a single connection
-// This handles reconnects and multiple requests efficiently.
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -13,9 +11,6 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-/**
- * Saves a completed analysis to the search_history table
- */
 async function saveSearch(query, symbol, companyName, recommendation, confidence, summary, resultJson) {
   try {
     const sql = `
@@ -35,13 +30,9 @@ async function saveSearch(query, symbol, companyName, recommendation, confidence
     return result.insertId;
   } catch (error) {
     console.error('Error saving search to database:', error);
-    // Don't throw so the API can still return the result even if DB fails
   }
 }
 
-/**
- * Retrieves past searches for the History page
- */
 async function getHistory() {
   try {
     const sql = `SELECT * FROM search_history ORDER BY created_at DESC LIMIT 50`;
