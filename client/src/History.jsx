@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 
-function History({ onNavigate }) {
+function History({ token, onNavigate }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchHistory = async () => {
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       try {
-        const response = await fetch('http://localhost:3000/api/history');
+        const response = await fetch(`${apiBase}/api/history`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch history');
         }
@@ -57,7 +60,7 @@ function History({ onNavigate }) {
             No previous searches found.
           </p>
           <button
-            className="bg-blue-600 text-white rounded-lg px-8 py-3.5 text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="bg-blue-600 text-white rounded-lg px-8 py-3.5 text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer"
             onClick={() => onNavigate('home')}
           >
             Start a Search
@@ -68,7 +71,6 @@ function History({ onNavigate }) {
       {!loading && !error && history.length > 0 && (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {history.map((item) => {
-            // Determine badge colors based on recommendation
             const rec = (item.recommendation || '').toLowerCase();
             const isPositive = rec.includes('invest') || rec.includes('buy');
             const isNegative = rec.includes('pass') || rec.includes('sell');
@@ -82,12 +84,13 @@ function History({ onNavigate }) {
             return (
               <div
                 key={item.id}
-                className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-between hover:border-blue-300 hover:shadow-sm transition-all"
+                onClick={() => onNavigate('home', item.symbol)}
+                className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-between hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group"
               >
                 <div>
                   <div className="flex items-start justify-between mb-5">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-900">
+                      <h3 className="text-lg font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
                         {item.company_name}
                       </h3>
                       <p className="text-xs font-mono font-bold text-slate-400 mt-1">

@@ -1,22 +1,11 @@
-const mysql = require('mysql2/promise');
-require('dotenv').config();
+const pool = require('../config/db');
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'investpilot',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
-
-async function saveSearch(query, symbol, companyName, recommendation, confidence, summary, resultJson) {
+async function saveSearch(query, symbol, companyName, recommendation, confidence, summary, resultJson, userId) {
   try {
     const sql = `
       INSERT INTO search_history 
-      (query, symbol, company_name, recommendation, confidence, summary, result_json)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      (query, symbol, company_name, recommendation, confidence, summary, result_json, user_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const [result] = await pool.execute(sql, [
       query, 
@@ -25,7 +14,8 @@ async function saveSearch(query, symbol, companyName, recommendation, confidence
       recommendation, 
       confidence, 
       summary,
-      JSON.stringify(resultJson)
+      JSON.stringify(resultJson),
+      userId || null
     ]);
     return result.insertId;
   } catch (error) {
@@ -33,10 +23,10 @@ async function saveSearch(query, symbol, companyName, recommendation, confidence
   }
 }
 
-async function getHistory() {
+async function getHistory(userId) {
   try {
-    const sql = `SELECT * FROM search_history ORDER BY created_at DESC LIMIT 50`;
-    const [rows] = await pool.execute(sql);
+    const sql = `SELECT * FROM search_history WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`;
+    const [rows] = await pool.execute(sql, [userId]);
     return rows;
   } catch (error) {
     console.error('Error fetching history from database:', error);

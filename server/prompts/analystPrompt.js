@@ -16,7 +16,7 @@ Calculated Metrics:
 - Debt-to-Equity: {debtToEquity}
 - Return on Equity (ROE): {returnOnEquity}
 
-Based strictly on these numbers, please provide an investment recommendation.`,
+Based strictly on these numbers, please provide an investment recommendation. Keep the summary extremely simple. It should be exactly one conversational sentence explaining the biggest factor. For example: "I won't recommend this because of the biggest factor being..." or "I recommend this because of the biggest factor being...". Do not use complex financial jargon.`,
   inputVariables: [
     "companyName", 
     "ticker", 

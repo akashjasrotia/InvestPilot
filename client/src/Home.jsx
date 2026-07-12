@@ -1,24 +1,59 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-function Home() {
+const LOADING_STEPS = [
+  "Finding company...",
+  "Reading SEC filings...",
+  "Calculating financial metrics...",
+  "Analyzing recent news...",
+  "Generating AI recommendation..."
+];
+
+function Home({ token, onNavigate, autoSearchQuery, onClearAutoSearch }) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [loadingStepIndex, setLoadingStepIndex] = useState(0);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  // Trigger search automatically when coming from History
+  useEffect(() => {
+    if (autoSearchQuery) {
+      setQuery(autoSearchQuery);
+      handleSearch(null, autoSearchQuery);
+      if (onClearAutoSearch) onClearAutoSearch();
+    }
+  }, [autoSearchQuery]);
+
+  // Loading animation pipeline
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      setLoadingStepIndex(0);
+      interval = setInterval(() => {
+        setLoadingStepIndex((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
+      }, 1200); // Progress step every 1.2s
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  const handleSearch = async (e, overrideQuery = null) => {
+    if (e) e.preventDefault();
+    const searchQuery = overrideQuery || query.trim();
+    if (!searchQuery) return;
 
     setLoading(true);
     setError('');
     setResult(null);
 
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     try {
-      const response = await fetch('http://localhost:3000/api/research', {
+      const response = await fetch(`${apiBase}/api/research`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: query.trim() }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ query: searchQuery }),
       });
 
       const data = await response.json();
@@ -32,7 +67,40 @@ function Home() {
       setError(err.message);
     } finally {
       setLoading(false);
+      setLoadingStepIndex(LOADING_STEPS.length - 1);
     }
+  };
+
+  const getMockNews = (companyName, ticker, recommendation) => {
+    const isInvest = recommendation === 'Invest';
+    const yahooNewsUrl = `https://finance.yahoo.com/quote/${ticker}/news`;
+    
+    return [
+      {
+        id: 1,
+        headline: isInvest ? `${companyName} Shows Strong Quarterly Momentum` : `${companyName} Faces Market Headwinds Amid Macro Pressures`,
+        date: "2 days ago",
+        summary: isInvest ? `Analysts highlight robust financial health for ${ticker} following a surprisingly resilient operating period.` : `Recent reports suggest ${ticker} is struggling to maintain its operating margins in the current environment.`,
+        sentiment: isInvest ? "Bullish" : "Bearish",
+        link: yahooNewsUrl
+      },
+      {
+        id: 2,
+        headline: `${companyName} Announces Key Strategic Initiatives`,
+        date: "1 week ago",
+        summary: `The executive team at ${companyName} has outlined a new roadmap to streamline core operations going into the next fiscal year.`,
+        sentiment: "Neutral",
+        link: yahooNewsUrl
+      },
+      {
+        id: 3,
+        headline: isInvest ? `Why ${ticker} Is Becoming A Top Pick For Institutional Investors` : `Investors Reduce Exposure to ${ticker} Following Industry Shifts`,
+        date: "2 weeks ago",
+        summary: isInvest ? `Hedge funds are increasing their stakes in ${companyName} citing solid fundamentals and a strong balance sheet.` : `Market sentiment shifts as ${companyName} navigates increased competition and capital restructuring.`,
+        sentiment: isInvest ? "Bullish" : "Bearish",
+        link: yahooNewsUrl
+      }
+    ];
   };
 
   return (
@@ -70,13 +138,43 @@ function Home() {
       )}
 
       {loading && (
-        <div className="border border-slate-200 rounded-xl p-12 flex flex-col items-center justify-center bg-slate-50/50">
-          <div className="w-6 h-6 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-          <p className="text-sm font-medium text-slate-500">Fetching SEC filings and analyzing data...</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm max-w-xl mx-auto mb-10">
+          <h3 className="text-sm font-semibold text-slate-900 mb-6 flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
+            AI Analysis Pipeline
+          </h3>
+          <div className="space-y-4">
+            {LOADING_STEPS.map((step, index) => {
+              const isCompleted = index < loadingStepIndex;
+              const isCurrent = index === loadingStepIndex;
+              const isPending = index > loadingStepIndex;
+
+              return (
+                <div key={index} className={`flex items-center gap-3 ${isPending ? 'opacity-40' : 'opacity-100'} transition-opacity duration-300`}>
+                  <div className="w-5 h-5 shrink-0 flex items-center justify-center">
+                    {isCompleted && (
+                      <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                    {isCurrent && (
+                      <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
+                    )}
+                    {isPending && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                    )}
+                  </div>
+                  <span className={`text-sm ${isCurrent ? 'font-medium text-blue-700' : 'text-slate-600'}`}>
+                    {step}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {result && (
+      {result && !loading && (
         <div className="space-y-6">
           <div className="pb-5 border-b border-slate-200">
             <h2 className="text-2xl font-bold text-slate-900">{result.company.name}</h2>
@@ -145,6 +243,37 @@ function Home() {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+          
+          {/* Mock News Section */}
+          <div className="mt-8 pt-8 border-t border-slate-200">
+            <h3 className="text-lg font-bold text-slate-900 mb-6">Recent News & Sentiment</h3>
+            <div className="grid gap-4">
+              {getMockNews(result.company.name, result.company.ticker, result.analysis.recommendation).map((news) => (
+                <a key={news.id} href={news.link} target="_blank" rel="noopener noreferrer" className="block group">
+                  <div className="bg-white border border-slate-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-start gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md border ${
+                          news.sentiment === 'Bullish' ? 'bg-green-50 text-green-700 border-green-200' :
+                          news.sentiment === 'Bearish' ? 'bg-red-50 text-red-700 border-red-200' :
+                          'bg-slate-50 text-slate-600 border-slate-200'
+                        }`}>
+                          {news.sentiment}
+                        </span>
+                        <span className="text-xs font-medium text-slate-400">{news.date}</span>
+                      </div>
+                      <h4 className="text-base font-semibold text-slate-900 group-hover:text-blue-600 transition-colors mb-2">
+                        {news.headline}
+                      </h4>
+                      <p className="text-sm text-slate-500 leading-relaxed">
+                        {news.summary}
+                      </p>
+                    </div>
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
         </div>

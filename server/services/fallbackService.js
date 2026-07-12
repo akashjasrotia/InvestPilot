@@ -17,7 +17,9 @@ function generateFallbackAnalysis(company, metrics) {
   return {
     recommendation,
     confidence,
-    summary: `Based on automated rules, ${company.name} has a profit margin of ${pm}% and a debt-to-equity ratio of ${de}.`,
+    summary: recommendation === 'Invest' 
+      ? `I recommend this because of the biggest factor being the healthy profit margin of ${pm}%.`
+      : `I won't recommend this because of the biggest factor being the poor debt-to-equity ratio and weak margins.`,
     keyFactors: [
       `Profit Margin: ${metrics.calculated.profitMargin}`,
       `Return on Equity: ${metrics.calculated.returnOnEquity}`
