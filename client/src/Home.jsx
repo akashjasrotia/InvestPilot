@@ -8,7 +8,7 @@ const LOADING_STEPS = [
   "Generating AI recommendation..."
 ];
 
-function Home({ token, onNavigate, autoSearchQuery, onClearAutoSearch }) {
+function Home({ token, onNavigate, autoSearchQuery, onClearAutoSearch, onResultChange }) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,6 +44,7 @@ function Home({ token, onNavigate, autoSearchQuery, onClearAutoSearch }) {
     setLoading(true);
     setError('');
     setResult(null);
+    if (onResultChange) onResultChange(null);
 
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     try {
@@ -63,6 +64,7 @@ function Home({ token, onNavigate, autoSearchQuery, onClearAutoSearch }) {
       }
 
       setResult(data);
+      if (onResultChange) onResultChange(data);
     } catch (err) {
       setError(err.message);
     } finally {

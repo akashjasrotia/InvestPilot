@@ -7,6 +7,7 @@ const databaseService = require('./services/databaseService');
 const { runInvestmentChain } = require('./ai/investmentChain');
 const { registerUser, loginUser } = require('./services/authService');
 const { requireAuth } = require('./middleware/auth');
+const { chatWithAnalyst } = require('./services/chatService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -80,6 +81,20 @@ app.get('/api/history', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching history:', error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/api/chat', requireAuth, async (req, res) => {
+  try {
+    const { context, history, message } = req.body;
+    if (!message || !context) {
+      return res.status(400).json({ error: 'message and context are required.' });
+    }
+    const reply = await chatWithAnalyst(context, history || [], message);
+    res.json({ reply });
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({ error: 'Failed to get a response. Please try again.' });
   }
 });
 
