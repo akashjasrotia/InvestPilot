@@ -1,5 +1,5 @@
 const { RunnableSequence } = require('@langchain/core/runnables');
-const { ChatOpenAI } = require('@langchain/openai');
+const { ChatGoogleGenerativeAI } = require('@langchain/google-genai');
 const { z } = require('zod');
 
 const secTool = require('../tools/secTool');
@@ -16,21 +16,18 @@ const analysisSchema = z.object({
 });
 
 async function runInvestmentChain(query) {
-  if (!process.env.QWEN_API_KEY) {
-    console.warn("QWEN_API_KEY is missing. Using rule-based fallback.");
+  if (!process.env.GEMINI_API_KEY) {
+    console.warn("GEMINI_API_KEY is missing. Using rule-based fallback.");
     const secResult = await secTool.invoke({ query });
     const metrics = await metricTool.invoke({ facts: secResult.facts });
     const analysis = generateFallbackAnalysis(secResult.company, metrics);
     return { company: secResult.company, metrics, analysis };
   }
 
-  const model = new ChatOpenAI({
-    modelName: "qwen-plus", 
+  const model = new ChatGoogleGenerativeAI({
+    model: "gemini-2.0-flash", 
     temperature: 0.2,
-    apiKey: process.env.QWEN_API_KEY,
-    configuration: {
-      baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    }
+    apiKey: process.env.GEMINI_API_KEY,
   });
   
   const structuredModel = model.withStructuredOutput(analysisSchema);

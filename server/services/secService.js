@@ -1,5 +1,6 @@
 const SEC_HEADERS = {
-  'User-Agent': 'InvestPilotApp contact@investpilot.com'
+  'User-Agent': 'InvestPilot/1.0 (akash@investpilot.com)',
+  'Accept-Encoding': 'gzip, deflate'
 };
 
 async function resolveTickerToCIK(query) {
@@ -9,7 +10,7 @@ async function resolveTickerToCIK(query) {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to fetch company tickers from SEC');
+      throw new Error(`Failed to fetch company tickers from SEC. Status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -30,7 +31,7 @@ async function resolveTickerToCIK(query) {
     return null;
   } catch (error) {
     console.error('Error in resolveTickerToCIK:', error);
-    throw new Error('Failed to resolve company ticker');
+    throw new Error(error.message || 'Failed to resolve company ticker');
   }
 }
 
