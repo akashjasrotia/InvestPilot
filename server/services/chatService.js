@@ -1,11 +1,14 @@
-const { ChatGoogleGenerativeAI } = require('@langchain/google-genai');
+const { ChatOpenAI } = require('@langchain/openai');
 const { HumanMessage, SystemMessage, AIMessage } = require('@langchain/core/messages');
 
 async function chatWithAnalyst(context, history, userMessage) {
-  const model = new ChatGoogleGenerativeAI({
-    model: 'gemini-1.5-flash',
+  const model = new ChatOpenAI({
+    modelName: 'qwen-plus',
     temperature: 0.5,
-    apiKey: process.env.GEMINI_API_KEY,
+    apiKey: process.env.QWEN_API_KEY,
+    configuration: {
+      baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    }
   });
 
   const systemPrompt = `You are a financial analyst assistant for InvestPilot. You have been given the following investment research data for ${context.companyName} (${context.ticker}). Your job is to help the user understand this specific company's analysis.
