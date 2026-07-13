@@ -3,11 +3,11 @@ const { HumanMessage, SystemMessage, AIMessage } = require('@langchain/core/mess
 
 async function chatWithAnalyst(context, history, userMessage) {
   const model = new ChatOpenAI({
-    modelName: 'qwen-plus',
+    modelName: 'meta-llama/llama-3.3-70b-instruct:free',
     temperature: 0.5,
-    apiKey: process.env.QWEN_API_KEY,
+    apiKey: process.env.OPENROUTER_API_KEY,
     configuration: {
-      baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      baseURL: 'https://openrouter.ai/api/v1',
     }
   });
 

@@ -1,5 +1,5 @@
 const { RunnableSequence } = require('@langchain/core/runnables');
-const { ChatGoogleGenerativeAI } = require('@langchain/google-genai');
+const { ChatOpenAI } = require('@langchain/openai');
 const { z } = require('zod');
 
 const secTool = require('../tools/secTool');
@@ -16,18 +16,21 @@ const analysisSchema = z.object({
 });
 
 async function runInvestmentChain(query) {
-  if (!process.env.GEMINI_API_KEY) {
-    console.warn("GEMINI_API_KEY is missing. Using rule-based fallback.");
+  if (!process.env.OPENROUTER_API_KEY) {
+    console.warn("OPENROUTER_API_KEY is missing. Using rule-based fallback.");
     const secResult = await secTool.invoke({ query });
     const metrics = await metricTool.invoke({ facts: secResult.facts });
     const analysis = generateFallbackAnalysis(secResult.company, metrics);
     return { company: secResult.company, metrics, analysis };
   }
 
-  const model = new ChatGoogleGenerativeAI({
-    model: "gemini-2.0-flash", 
+  const model = new ChatOpenAI({
+    modelName: "meta-llama/llama-3.3-70b-instruct:free", 
     temperature: 0.2,
-    apiKey: process.env.GEMINI_API_KEY,
+    apiKey: process.env.OPENROUTER_API_KEY,
+    configuration: {
+      baseURL: 'https://openrouter.ai/api/v1',
+    }
   });
   
   const structuredModel = model.withStructuredOutput(analysisSchema);
