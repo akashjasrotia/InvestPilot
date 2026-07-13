@@ -30,12 +30,8 @@ async function resolveTickerToCIK(query) {
     
     return null;
   } catch (error) {
-    console.error('Error in resolveTickerToCIK, returning mock data:', error);
-    return {
-      cik: '0000000000',
-      ticker: query.toUpperCase(),
-      name: query.toUpperCase() + ' (Mock Fallback)'
-    };
+    console.error('Error in resolveTickerToCIK:', error);
+    throw new Error('Failed to resolve company ticker. The SEC database might be rate-limiting requests. Please try again in a few seconds.');
   }
 }
 
@@ -53,18 +49,8 @@ async function getCompanyFacts(cik) {
     const facts = await response.json();
     return facts;
   } catch (error) {
-    console.error(`Error fetching SEC facts for CIK ${cik}, returning mock data:`, error);
-    return {
-      facts: {
-        "us-gaap": {
-          "Revenues": { units: { USD: [{ form: "10-K", val: 380000000000 }, { form: "10-K", val: 390000000000 }] } },
-          "NetIncomeLoss": { units: { USD: [{ form: "10-K", val: 95000000000 }] } },
-          "Assets": { units: { USD: [{ form: "10-K", val: 350000000000 }] } },
-          "Liabilities": { units: { USD: [{ form: "10-K", val: 290000000000 }] } },
-          "StockholdersEquity": { units: { USD: [{ form: "10-K", val: 60000000000 }] } }
-        }
-      }
-    };
+    console.error(`Error fetching SEC facts for CIK ${cik}:`, error);
+    throw new Error('Failed to fetch financial data from SEC. The SEC database might be temporarily rate-limiting requests. Please try again.');
   }
 }
 
