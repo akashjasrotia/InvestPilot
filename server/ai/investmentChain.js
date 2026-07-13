@@ -25,7 +25,7 @@ async function runInvestmentChain(query) {
   }
 
   const model = new ChatOpenAI({
-    modelName: "meta-llama/llama-3.3-70b-instruct:free", 
+    modelName: "openai/gpt-4o-mini", 
     temperature: 0.2,
     apiKey: process.env.OPENROUTER_API_KEY,
     configuration: {
