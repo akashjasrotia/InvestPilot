@@ -16,7 +16,13 @@ Calculated Metrics:
 - Debt-to-Equity: {debtToEquity}
 - Return on Equity (ROE): {returnOnEquity}
 
-Based strictly on these numbers, please provide an investment recommendation. Keep the summary extremely simple. It should be exactly one conversational sentence explaining the biggest factor. For example: "I won't recommend this because of the biggest factor being..." or "I recommend this because of the biggest factor being...". Do not use complex financial jargon.`,
+Based strictly on these numbers, please provide an investment recommendation. 
+
+CRITICAL INSTRUCTIONS:
+1. Recommendation: Choose either "Invest" or "Pass".
+2. Summary: Keep the summary extremely simple. It should be exactly one conversational sentence explaining the biggest factor. For example: "I won't recommend this because of the biggest factor being..." or "I recommend this because of the biggest factor being...". Do not use complex financial jargon. The summary MUST match your recommendation.
+3. Bull Case (keyFactors): Provide exactly 2-3 positive factors about the financial metrics.
+4. Risk Factors (risks): Provide exactly 2-3 negative factors or risks about the financial metrics.`,
   inputVariables: [
     "companyName", 
     "ticker", 
