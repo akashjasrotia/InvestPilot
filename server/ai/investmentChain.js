@@ -28,6 +28,7 @@ async function runInvestmentChain(query) {
     modelName: "openai/gpt-4o-mini", 
     temperature: 0.2,
     apiKey: process.env.OPENROUTER_API_KEY,
+    timeout: 15000,
     configuration: {
       baseURL: 'https://openrouter.ai/api/v1',
     }
@@ -62,7 +63,7 @@ async function runInvestmentChain(query) {
       const llmChain = analystPrompt.pipe(structuredModel);
       const analysis = await llmChain.invoke(promptParams);
       
-      console.log("Fetched with Gemini using LCEL Chain");
+      console.log("Fetched with OpenRouter using LCEL Chain");
       return { company, metrics, analysis };
     }
   ]);

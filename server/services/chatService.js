@@ -6,6 +6,7 @@ async function chatWithAnalyst(context, history, userMessage) {
     modelName: 'openai/gpt-4o-mini',
     temperature: 0.5,
     apiKey: process.env.OPENROUTER_API_KEY,
+    timeout: 15000,
     configuration: {
       baseURL: 'https://openrouter.ai/api/v1',
     }
@@ -31,9 +32,9 @@ Risk Factors:
 ${context.risks.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 ---
 
-Rules:
-- Only answer questions about ${context.companyName} and this specific analysis.
-- If the user asks about a completely different company or topic unrelated to this analysis, politely say: "I'm focused on ${context.companyName} right now. Feel free to ask me anything about this company's financials, risks, or recommendation."
+- Focus on answering questions about ${context.companyName} and this specific analysis.
+- If the user asks about a completely different company, politely say: "I'm focused on ${context.companyName} right now. Feel free to ask me anything about this company's financials, risks, or recommendation."
+- If the user asks about live/real-time stock prices, real-time news, or external events not in the context above, politely explain that you do not have live internet search or real-time news feeds in this session, but you can discuss the financial metrics, bull case, and risks from their recent filings.
 - Keep answers conversational, clear, and jargon-free. Max 3-4 sentences unless a detailed explanation is needed.
 - Do not make up data. Only use what is provided in the context above.`;
 

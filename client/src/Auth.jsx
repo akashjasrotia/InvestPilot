@@ -32,7 +32,7 @@ function Auth({ onAuth }) {
       localStorage.setItem('investpilot_user', JSON.stringify(data.user));
       onAuth(data.token, data.user);
     } catch (err) {
-      setError(err.message);
+      setError(err.message + "Unable to connect at the moment.");
     } finally {
       setLoading(false);
     }
