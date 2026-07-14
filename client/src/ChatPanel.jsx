@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { getMockNews } from './utils';
 
 function ChatPanel({ result, token, messages, onMessagesChange, onClose }) {
   const initialGreeting = {
@@ -25,6 +26,7 @@ function ChatPanel({ result, token, messages, onMessagesChange, onClose }) {
     keyFactors: result.analysis.keyFactors,
     risks: result.analysis.risks,
     metrics: result.metrics.calculated,
+    news: getMockNews(result.company.name, result.company.ticker, result.analysis.recommendation),
   };
 
   const sendMessage = async (e) => {

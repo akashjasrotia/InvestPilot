@@ -12,6 +12,11 @@ async function chatWithAnalyst(context, history, userMessage) {
     }
   });
 
+  const newsContext = context.news && context.news.length > 0
+    ? `Recent News & Sentiment:
+${context.news.map((n, i) => `${i + 1}. [Sentiment: ${n.sentiment}] "${n.headline}" (${n.date}) - ${n.summary}`).join('\n')}`
+    : 'No recent news was evaluated.';
+
   const systemPrompt = `You are a financial analyst assistant for InvestPilot. You have been given the following investment research data for ${context.companyName} (${context.ticker}). Your job is to help the user understand this specific company's analysis.
 
 --- Company Analysis Context ---
@@ -30,11 +35,13 @@ ${context.keyFactors.map((f, i) => `${i + 1}. ${f}`).join('\n')}
 
 Risk Factors:
 ${context.risks.map((r, i) => `${i + 1}. ${r}`).join('\n')}
+
+${newsContext}
 ---
 
-- Focus on answering questions about ${context.companyName} and this specific analysis.
+- Focus on answering questions about ${context.companyName}, this specific analysis, and the provided news articles.
 - If the user asks about a completely different company, politely say: "I'm focused on ${context.companyName} right now. Feel free to ask me anything about this company's financials, risks, or recommendation."
-- If the user asks about live/real-time stock prices, real-time news, or external events not in the context above, politely explain that you do not have live internet search or real-time news feeds in this session, but you can discuss the financial metrics, bull case, and risks from their recent filings.
+- If the user asks about live/real-time stock prices or real-time news not present in the context above, politely explain that you do not have live internet search or general real-time feeds in this session, but you can discuss the specific analysis, metrics, risks, and news articles listed in the context.
 - Keep answers conversational, clear, and jargon-free. Max 3-4 sentences unless a detailed explanation is needed.
 - Do not make up data. Only use what is provided in the context above.`;
 
