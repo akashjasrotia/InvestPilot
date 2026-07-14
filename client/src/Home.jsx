@@ -9,12 +9,24 @@ const LOADING_STEPS = [
   "Generating AI recommendation..."
 ];
 
+const FREQUENT_COMPANIES = [
+  { label: 'Apple', query: 'AAPL', sector: 'Technology' },
+  { label: 'NVIDIA', query: 'NVDA', sector: 'Semiconductors' },
+  { label: 'Microsoft', query: 'MSFT', sector: 'Technology' },
+  { label: 'Tesla', query: 'TSLA', sector: 'EV / Auto' },
+  { label: 'Amazon', query: 'AMZN', sector: 'E-Commerce' },
+  { label: 'Alphabet', query: 'GOOGL', sector: 'Technology' },
+  { label: 'Meta', query: 'META', sector: 'Social Media' },
+  { label: 'JPMorgan', query: 'JPM', sector: 'Finance' },
+];
+
 function Home({ token, onNavigate, autoSearchQuery, onClearAutoSearch, onResultChange }) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const [loadingStepIndex, setLoadingStepIndex] = useState(0);
+  const [activeChip, setActiveChip] = useState(null);
 
   // Trigger search automatically when coming from History
   useEffect(() => {
@@ -71,7 +83,14 @@ function Home({ token, onNavigate, autoSearchQuery, onClearAutoSearch, onResultC
     } finally {
       setLoading(false);
       setLoadingStepIndex(LOADING_STEPS.length - 1);
+      setActiveChip(null);
     }
+  };
+
+  const handleQuickSearch = (company) => {
+    setActiveChip(company.query);
+    setQuery(company.query);
+    handleSearch(null, company.query);
   };
 
 
@@ -100,6 +119,52 @@ function Home({ token, onNavigate, autoSearchQuery, onClearAutoSearch, onResultC
           {loading ? 'Analyzing...' : 'Research'}
         </button>
       </form>
+
+      {/* Frequently Searched Companies */}
+      {!result && !loading && (
+        <div className="mb-10">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
+            Frequently Searched
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {FREQUENT_COMPANIES.map((company) => {
+              const isActive = activeChip === company.query;
+              return (
+                <button
+                  key={company.query}
+                  onClick={() => handleQuickSearch(company)}
+                  disabled={loading}
+                  className={`
+                    group relative flex items-center gap-3 bg-white border rounded-xl px-4 py-3.5
+                    text-left transition-all duration-200
+                    hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5
+                    active:translate-y-0 active:shadow-sm
+                    disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none
+                    ${isActive
+                      ? 'border-blue-400 shadow-md bg-blue-50'
+                      : 'border-slate-200 shadow-sm'
+                    }
+                  `}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-semibold truncate transition-colors ${isActive ? 'text-blue-700' : 'text-slate-800 group-hover:text-blue-700'}`}>
+                      {company.label}
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-mono font-medium mt-0.5">
+                      {company.query} · {company.sector}
+                    </p>
+                  </div>
+                  {isActive && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-5 flex items-center gap-3 text-red-600 text-sm mb-6">
